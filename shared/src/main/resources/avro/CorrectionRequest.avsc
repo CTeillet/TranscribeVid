@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "name": "CorrectionRequest",
+  "namespace": "com.teillet.shared.avro",
+  "fields": [
+    {
+      "name": "requestId",
+      "type": "string",
+      "doc": "Unique identifier for the transcription process"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Timestamp when the transcription request was created, in ISO 8601 format"
+    },
+    {
+      "name" : "transcription",
+        "type" : "string",
+        "doc" : "The transcription to correct",
+        "default" : ""
+    }
+  ]
+}

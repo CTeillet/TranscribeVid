@@ -1,0 +1,7 @@
+### GET localhost 8080 /recognize
+GET localhost:8080/recognize
+
+
+
+### GET localhost 8080 /recognizeDocker
+GET localhost:8080/recognizeDocker

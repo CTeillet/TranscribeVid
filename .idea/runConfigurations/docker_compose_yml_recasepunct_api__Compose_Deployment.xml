@@ -1,0 +1,23 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="docker-compose.yml.recasepunct-api: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="envFilePath" value="" />
+        <option name="services">
+          <list>
+            <option value="recasepunct-api" />
+            <option value="control-center" />
+            <option value="kafka" />
+            <option value="kaldi-fr" />
+            <option value="minio" />
+            <option value="redis-stack" />
+            <option value="schema-registry" />
+            <option value="zookeeper" />
+          </list>
+        </option>
+        <option name="sourceFilePath" value="docker-compose.yml" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

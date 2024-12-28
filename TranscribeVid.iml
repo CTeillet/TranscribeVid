@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$" dumb="true">
+      <excludeFolder url="file://$MODULE_DIR$/download-convert-service" />
+      <excludeFolder url="file://$MODULE_DIR$/download-download-service" />
+      <excludeFolder url="file://$MODULE_DIR$/download-transcription-service" />
+      <excludeFolder url="file://$MODULE_DIR$/ffmpeg" />
+      <excludeFolder url="file://$MODULE_DIR$/models" />
+      <excludeFolder url="file://$MODULE_DIR$/corrected-transcription" />
+      <excludeFolder url="file://$MODULE_DIR$/download-corrected-transcription" />
+    </content>
+  </component>
+</module>
