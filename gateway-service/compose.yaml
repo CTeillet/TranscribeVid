@@ -1,0 +1,14 @@
+services:
+  kaldi-fr:
+    image: alphacep/kaldi-fr:latest
+    container_name: kaldi-fr
+    volumes:
+      - ./models/vosk-model-small-fr-0.22:/opt/vosk-model-fr/model
+    ports:
+      - "2700:2700"
+
+  recasepunct-api:
+    image: ghcr.io/cteillet/recasepunct-api:v1.0.0
+    container_name: recasepunct-api
+    ports:
+      - "5000:5000"
