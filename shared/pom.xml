@@ -76,7 +76,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version> <!-- Vérifie la dernière version disponible -->
+                <version>${maven-compiler-plugin.version}</version> <!-- Vérifie la dernière version disponible -->
                 <configuration>
                     <source>${java.version}</source> <!-- Version de Java utilisée dans ton projet -->
                     <target>${java.version}</target>

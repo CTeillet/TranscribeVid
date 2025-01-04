@@ -15,8 +15,22 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
+    <modules>
+        <module>download-service</module>
+        <module>correction-service</module>
+        <module>convert-service</module>
+        <module>gateway-service</module>
+        <module>trace-service</module>
+        <module>transcribe-service</module>
+        <module>email-service</module>
+        <module>shared</module>
+    </modules>
+
     <properties>
+        <!-- Version de JAVA -->
         <java.version>21</java.version>
+
+        <!-- Version des dépendances -->
         <spring.boot.version>3.4.1</spring.boot.version>
         <lombok.version>1.18.36</lombok.version>
         <maven.version>3.9.9</maven.version>
@@ -32,18 +46,11 @@
         <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
         <jasypt-spring-boot-starter.version>3.0.5</jasypt-spring-boot-starter.version>
         <nv-websocket-client.version>2.14</nv-websocket-client.version>
-    </properties>
+        <jib-maven-plugin.version>3.4.0</jib-maven-plugin.version>
 
-    <modules>
-        <module>download-service</module>
-        <module>correction-service</module>
-        <module>convert-service</module>
-        <module>gateway-service</module>
-        <module>trace-service</module>
-        <module>transcribe-service</module>
-        <module>email-service</module>
-        <module>shared</module>
-    </modules>
+        <!-- Configuration GitHub -->
+        <github.username>cteillet</github.username>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -163,5 +170,66 @@
             <id>confluent</id>
             <url>https://packages.confluent.io/maven/</url>
         </repository>
+        <repository>
+            <id>maven_central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>${project.build.directory}/.env</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>${jib-maven-plugin.version}</version>
+                <configuration>
+                    <from>
+                        <!-- Spécifiez une image de base compatible avec Java 21 -->
+                        <image>eclipse-temurin:${java.version}-jre-alpine</image>
+                    </from>
+                    <to>
+                        <!-- Utilise les variables chargées depuis .env -->
+                        <image>ghcr.io/${github.username}/${project.artifactId}:latest</image>
+                        <auth>
+                            <username>${github.username}</username>
+                            <password>${github.token}</password>
+                        </auth>
+                    </to>
+                    <container>
+                        <jvmFlags>
+                            <jvmFlag>-Xms512m</jvmFlag>
+                            <jvmFlag>-Xmx1024m</jvmFlag>
+                        </jvmFlags>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                    </container>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
