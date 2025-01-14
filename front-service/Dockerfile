@@ -1,5 +1,5 @@
 # Étape 1 : Construire l'application avec Vite
-FROM node:18-alpine AS build-stage
+FROM node:23-alpine AS build-stage
 
 # Réduire la taille de l'image en n'installant que les outils nécessaires
 RUN apk add --no-cache bash
@@ -11,7 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Installer uniquement les dépendances de production
-RUN npm install --production
+RUN npm install
 
 # Copier le reste des fichiers source
 COPY . .

@@ -1,0 +1,92 @@
+name: Build and Push Docker Images for All Services
+
+on:
+  push:
+    branches:
+      - '**' # Exécuter sur tous les push vers toutes les branches
+  pull_request:
+    branches:
+      - '**'
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module:
+          - convert-service
+          - correction-service
+          - download-service
+          - email-service
+          - gateway-service
+          - trace-service
+          - transcribe-service
+          - front-service
+
+    steps:
+      # Étape 1 : Checkout du code source
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Étape 2 : Extraire et transformer le nom du dépôt en minuscules
+      - name: Extract and lowercase repository name
+        id: extract-repo-name
+        run: echo "repository_name=$(echo '${{ github.repository }}' | cut -d'/' -f2 | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      # Étape 3 : Récupérer le propriétaire en minuscules
+      - name: Convert repository owner to lowercase
+        id: to-lowercase
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      # Étape 4 : Configuration de Java (uniquement pour les backend services)
+      - name: Set up JDK
+        if: ${{ matrix.module != 'front-service' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      #      # Étape 5 : Installer le module shared
+      #      - name: Build and install shared module
+      #        if: ${{ matrix.module != 'front-service' }}
+      #        run: mvn -pl shared clean install
+
+      # Étape 6 : Créer le fichier .env pour les backend services
+      #      - name: Create .env file for backend services
+      #        if: ${{ matrix.module != 'front-service' }}
+      #        run: echo "github.token=${{ secrets.GITHUB_TOKEN }}" > .env
+      #        working-directory: ./${{ matrix.module }}
+
+
+      - name: Build and install shared module
+        if: ${{ matrix.module != 'front-service' }}
+        run: mvn -pl shared clean install -am
+
+      # Étape 7 : Construire et pousser une image pour les services backend
+      - name: Build and push backend Docker image
+        if: ${{ matrix.module != 'front-service' }}
+        run: mvn -pl ${{ matrix.module }} clean install -am
+        env:
+          GITHUB_USERNAME: ${{ env.owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Étape 7 : Construire et pousser une image pour les services backend
+      - name: Build and push backend Docker image
+        if: ${{ matrix.module != 'front-service' }}
+        run: mvn -pl ${{ matrix.module }} jib:build
+        env:
+          GITHUB_USERNAME: ${{ env.owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Étape 8 : Construire et pousser une image pour le front-service
+      - name: Build and push frontend Docker image
+        if: ${{ matrix.module == 'front-service' }}
+        run: |
+          docker build -t ghcr.io/${{ env.owner }}/${{ env.repository_name }}/front-service:latest ./front-service
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ env.owner }}" --password-stdin
+          docker push ghcr.io/${{ env.owner }}/${{ env.repository_name }}/front-service:latest

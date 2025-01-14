@@ -37,15 +37,15 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="convert-service" options="-parameters -Amapstruct.defaultComponentModel=spring" />
-      <module name="correction-service" options="-parameters -Amapstruct.defaultComponentModel=spring" />
-      <module name="download-service" options="-parameters -Amapstruct.defaultComponentModel=spring" />
-      <module name="email-service" options="-parameters -Amapstruct.defaultComponentModel=spring" />
+      <module name="convert-service" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="correction-service" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="download-service" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="email-service" options="-Amapstruct.defaultComponentModel=spring" />
       <module name="email-service (2)" options="-parameters -Amapstruct.defaultComponentModel=spring" />
-      <module name="gateway-service" options="-parameters -Amapstruct.defaultComponentModel=spring" />
-      <module name="shared" options="-parameters -Amapstruct.defaultComponentModel=spring" />
-      <module name="trace-service" options="-parameters -Amapstruct.defaultComponentModel=spring" />
-      <module name="transcribe-service" options="-parameters -Amapstruct.defaultComponentModel=spring" />
+      <module name="gateway-service" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="shared" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="trace-service" options="-Amapstruct.defaultComponentModel=spring" />
+      <module name="transcribe-service" options="-Amapstruct.defaultComponentModel=spring" />
     </option>
   </component>
 </project>

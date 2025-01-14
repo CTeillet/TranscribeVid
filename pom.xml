@@ -8,14 +8,8 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.1</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
-
     <modules>
+        <module>shared</module>
         <module>download-service</module>
         <module>correction-service</module>
         <module>convert-service</module>
@@ -23,7 +17,6 @@
         <module>trace-service</module>
         <module>transcribe-service</module>
         <module>email-service</module>
-        <module>shared</module>
     </modules>
 
     <properties>
@@ -46,7 +39,7 @@
         <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
         <jasypt-spring-boot-starter.version>3.0.5</jasypt-spring-boot-starter.version>
         <nv-websocket-client.version>2.14</nv-websocket-client.version>
-        <jib-maven-plugin.version>3.4.0</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 
         <!-- Configuration GitHub -->
         <github.username>cteillet</github.username>
@@ -183,24 +176,7 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>properties-maven-plugin</artifactId>
-                <version>1.1.0</version>
-                <executions>
-                    <execution>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>read-project-properties</goal>
-                        </goals>
-                        <configuration>
-                            <files>
-                                <file>${project.build.directory}/.env</file>
-                            </files>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
@@ -212,10 +188,11 @@
                     </from>
                     <to>
                         <!-- Utilise les variables chargées depuis .env -->
-                        <image>ghcr.io/${github.username}/${project.artifactId}:latest</image>
+                        <image>ghcr.io/${github.username}/transcribevid/${project.artifactId}:latest</image>
                         <auth>
                             <username>${github.username}</username>
-                            <password>${github.token}</password>
+                            <!--suppress UnresolvedMavenProperty -->
+                            <password>${GITHUB_TOKEN}</password>
                         </auth>
                     </to>
                     <container>
@@ -228,6 +205,11 @@
                         </ports>
                     </container>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.3.0</version>
             </plugin>
         </plugins>
     </build>
