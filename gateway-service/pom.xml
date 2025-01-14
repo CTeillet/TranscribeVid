@@ -39,18 +39,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- TarsosDSP -->
-        <dependency>
-            <groupId>be.tarsos.dsp</groupId>
-            <artifactId>jvm</artifactId>
-            <version>2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>be.tarsos.dsp</groupId>
-            <artifactId>core</artifactId>
-            <version>2.5</version>
-        </dependency>
-
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -87,25 +75,6 @@
             <artifactId>jasypt-spring-boot-starter</artifactId>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>maven_central</id>
-            <name>Maven Central</name>
-            <url>https://repo.maven.apache.org/maven2/</url>
-        </repository>
-        <repository>
-            <id>be.0110.repo-releases</id>
-            <name>0110.be repository</name>
-            <url>https://mvn.0110.be/releases</url>
-        </repository>
-        <repository>
-            <name>Confluent</name>
-            <id>confluent</id>
-            <url>https://packages.confluent.io/maven/</url>
-        </repository>
-
-    </repositories>
 
     <build>
         <plugins>

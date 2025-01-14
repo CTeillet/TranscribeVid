@@ -9,10 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "vite-plugin-compression": "^0.5.1",
     "vue": "^3.4.29"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",
+    "terser": "^5.37.0",
     "vite": "^5.3.1"
   }
 }
