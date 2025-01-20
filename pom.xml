@@ -199,6 +199,8 @@
                         <jvmFlags>
                             <jvmFlag>-Xms512m</jvmFlag>
                             <jvmFlag>-Xmx1024m</jvmFlag>
+                            <!-- Ajout du mot de passe Jasypt via une variable d'environnement -->
+                            <jvmFlag>-Djasypt.encryptor.password=${JASYPT_PASSWORD}</jvmFlag>
                         </jvmFlags>
                         <ports>
                             <port>8080</port>

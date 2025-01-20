@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="container">
-    <HeaderComponent />
+    <HeaderComponent/>
 
     <form @submit.prevent="submitForm" class="form">
       <InputFieldComponent
@@ -16,7 +16,7 @@
           placeholder="Enter your email"
       />
 
-      <SubmitButtonComponent />
+      <SubmitButtonComponent/>
     </form>
   </div>
 </template>
@@ -50,7 +50,7 @@ export default {
           email: this.email
         };
 
-        const response = await fetch('http://localhost:8080/api/transcribe-requests', {
+        const response = await fetch('http://localhost:8089/api/transcribe-requests', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -59,7 +59,7 @@ export default {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${ response.status }`);
         }
 
         const result = await response.json();
