@@ -129,6 +129,37 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>${jib-maven-plugin.version}</version>
+                <configuration>
+                    <from>
+                        <!-- Spécifiez une image de base compatible avec Java 21 -->
+                        <image>ghcr.io/cteillet/docker-java-ffmpeg:main</image>
+                    </from>
+                    <to>
+                        <!-- Utilise les variables chargées depuis .env -->
+                        <image>ghcr.io/${github.username}/transcribevid/${project.artifactId}:latest</image>
+                        <auth>
+                            <username>${github.username}</username>
+                            <!--suppress UnresolvedMavenProperty -->
+                            <password>${GITHUB_TOKEN}</password>
+                        </auth>
+                    </to>
+                    <container>
+                        <jvmFlags>
+                            <jvmFlag>-Xms512m</jvmFlag>
+                            <jvmFlag>-Xmx1024m</jvmFlag>
+                            <!-- Ajout du mot de passe Jasypt via une variable d'environnement -->
+                            <jvmFlag>-Djasypt.encryptor.password=${JASYPT_PASSWORD}</jvmFlag>
+                        </jvmFlags>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                    </container>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
