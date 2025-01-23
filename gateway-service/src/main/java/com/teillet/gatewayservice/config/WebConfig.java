@@ -10,8 +10,8 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**") // Permet toutes les URL
 				.allowedOriginPatterns("*") // Autorise uniquement votre frontend
-				.allowedMethods("POST") // Autorise ces méthodes HTTP
-				.allowedHeaders("*") // Autorise tous les en-têtes
-				.allowCredentials(true); // Autorise les cookies ou l'authentification
+				.allowedMethods("POST", "OPTIONS") // Autorise ces méthodes HTTP
+				.allowedHeaders("*"); // Autorise tous les en-têtes
+//				.allowCredentials(true); // Autorise les cookies ou l'authentification
 	}
 }
