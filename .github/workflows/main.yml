@@ -90,3 +90,48 @@ jobs:
           docker build -t ghcr.io/${{ env.owner }}/${{ env.repository_name }}/front-service:latest ./front-service
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ env.owner }}" --password-stdin
           docker push ghcr.io/${{ env.owner }}/${{ env.repository_name }}/front-service:latest
+
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Étape 1 : Checkout du code source
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Étape 2 : Configuration SSH pour se connecter à la VM
+      - name: Connect to VM via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          script: |
+            echo "Connexion établie avec la VM"
+
+      # Étape 3 : Copie du fichier docker-compose.yml sur la VM
+      - name: Upload docker-compose.yml to VM
+        uses: appleboy/scp-action@v0.1.8
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          source: ./docker-compose.yml
+          target: /path/to/your/project/
+
+      # Étape 4 : Supprimer les anciennes images et démarrer les nouveaux services
+      - name: Deploy services with Docker Compose
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          script: |
+            cd /path/to/your/project/
+            docker-compose down --remove-orphans
+            docker-compose pull
+            docker-compose up -

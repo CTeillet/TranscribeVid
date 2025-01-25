@@ -9,6 +9,8 @@ services:
       - "2181:2181"
     networks:
       - default
+    restart:
+      always
 
 
   kafka:
@@ -17,6 +19,7 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+      - "9093:9093"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -27,6 +30,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    restart:
+      always
     networks:
       - default
 
@@ -43,7 +48,8 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - default
-
+    restart:
+      always
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:latest
@@ -59,6 +65,8 @@ services:
       - schema-registry
     networks:
       - default
+    restart:
+      always
 
   redis-stack:
     image: redis/redis-stack:latest
@@ -67,6 +75,8 @@ services:
       - "8001:8001"
     networks:
       - default
+    restart:
+      always
 
   minio:
     image: minio/minio:latest
@@ -81,6 +91,8 @@ services:
       - minio-data:/data
     networks:
       - default
+    restart:
+      always
 
   kaldi-fr:
     image: alphacep/kaldi-fr:latest
@@ -88,6 +100,8 @@ services:
       - "2700:2700"
     networks:
       - default
+    restart:
+      always
 
   recasepunct-api:
     image: ghcr.io/cteillet/recasepunct-api:v1.0.0
@@ -95,6 +109,8 @@ services:
       - "5000:5000"
     networks:
       - default
+    restart:
+      always
 
   email-service:
     image: ghcr.io/cteillet/transcribevid/email-service:latest
@@ -110,6 +126,8 @@ services:
       - kafka
       - minio
       - kaldi-fr
+    restart:
+      always
 
   convert-service:
     image: ghcr.io/cteillet/transcribevid/convert-service:latest
@@ -124,6 +142,8 @@ services:
       - redis-stack
       - kafka
       - minio
+    restart:
+      always
 
   correction-service:
     image: ghcr.io/cteillet/transcribevid/correction-service:latest
@@ -139,6 +159,8 @@ services:
       - kafka
       - minio
       - recasepunct-api
+    restart:
+      always
 
   download-service:
     image: ghcr.io/cteillet/transcribevid/download-service:latest
@@ -153,6 +175,8 @@ services:
       - redis-stack
       - kafka
       - minio
+    restart:
+      always
 
   gateway-service:
     image: ghcr.io/cteillet/transcribevid/gateway-service:latest
@@ -165,6 +189,8 @@ services:
     depends_on:
       - redis-stack
       - kafka
+    restart:
+      always
 
   transcribe-service:
     image: ghcr.io/cteillet/transcribevid/transcribe-service:latest
@@ -179,6 +205,8 @@ services:
       - redis-stack
       - kafka
       - minio
+    restart:
+      always
 
   trace-service:
     image: ghcr.io/cteillet/transcribevid/trace-service:latest
@@ -189,6 +217,8 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
     networks:
       - default
+    restart:
+      always
 
   front-service:
     image: ghcr.io/cteillet/transcribevid/front-service:latest
@@ -198,6 +228,8 @@ services:
       - default
     depends_on:
       - gateway-service
+    restart:
+      always
 
 networks:
   default:
