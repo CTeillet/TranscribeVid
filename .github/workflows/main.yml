@@ -1,3 +1,4 @@
+#file: noinspection SpellCheckingInspection
 name: Build and Push Docker Images for All Services
 
 on:
@@ -13,20 +14,45 @@ permissions:
   contents: read
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      modified-modules: ${{ steps.detect.outputs.modified }}
+    steps:
+      # Étape 1 : Checkout du code source
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Récupérer tout l'historique Git
+
+      # Étape 2 : Détecter les modules modifiés
+      - name: Detect modified modules
+        id: detect
+        run: |
+          MODIFIED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          MODULES=("convert-service" "correction-service" "download-service" "email-service" "gateway-service" "trace-service" "transcribe-service" "front-service")
+          MODIFIED_MODULES=()
+          for module in "${MODULES[@]}"; do
+            if echo "$MODIFIED_FILES" | grep -q "^$module/"; then
+              MODIFIED_MODULES+=("\"$module\"")
+            fi
+          done
+          echo "modified=[${MODIFIED_MODULES[*]}]" >> $GITHUB_OUTPUT
+
+      # Étape 3 : Afficher les modules modifiés
+      - name: Print modified modules
+        run: |
+          echo "Modules modifiés: ${{ steps.detect.outputs.modified }}"
+
+
   build-and-push:
     runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.modified-modules != '[]' }} # Empêcher l'exécution si aucun module n'est modifié
 
     strategy:
       matrix:
-        module:
-          - convert-service
-          - correction-service
-          - download-service
-          - email-service
-          - gateway-service
-          - trace-service
-          - transcribe-service
-          - front-service
+        module: ${{ fromJson(needs.detect-changes.outputs.modified-modules) }}
 
     steps:
       # Étape 1 : Checkout du code source
@@ -51,23 +77,11 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      #      # Étape 5 : Installer le module shared
-      #      - name: Build and install shared module
-      #        if: ${{ matrix.module != 'front-service' }}
-      #        run: mvn -pl shared clean install
-
-      # Étape 6 : Créer le fichier .env pour les backend services
-      #      - name: Create .env file for backend services
-      #        if: ${{ matrix.module != 'front-service' }}
-      #        run: echo "github.token=${{ secrets.GITHUB_TOKEN }}" > .env
-      #        working-directory: ./${{ matrix.module }}
-
-
       - name: Build and install shared module
         if: ${{ matrix.module != 'front-service' }}
         run: mvn -pl shared clean install -am
 
-      # Étape 7 : Construire et pousser une image pour les services backend
+      # Étape 7 : Construire module maven
       - name: Build and push backend Docker image
         if: ${{ matrix.module != 'front-service' }}
         run: mvn -pl ${{ matrix.module }} clean install -am
@@ -75,7 +89,7 @@ jobs:
           GITHUB_USERNAME: ${{ env.owner }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Étape 7 : Construire et pousser une image pour les services backend
+      # Étape 7 : Pousser une image pour les services backend
       - name: Build and push backend Docker image
         if: ${{ matrix.module != 'front-service' }}
         run: mvn -pl ${{ matrix.module }} jib:build
@@ -94,6 +108,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    needs: build-and-push # S'assurer que ce job dépend de "build-and-push"
 
     steps:
       # Étape 1 : Checkout du code source
@@ -102,36 +117,38 @@ jobs:
 
       # Étape 2 : Configuration SSH pour se connecter à la VM
       - name: Connect to VM via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
           port: ${{ secrets.VM_SSH_PORT }}
           script: |
             echo "Connexion établie avec la VM"
 
       # Étape 3 : Copie du fichier docker-compose.yml sur la VM
       - name: Upload docker-compose.yml to VM
-        uses: appleboy/scp-action@v0.1.8
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
           port: ${{ secrets.VM_SSH_PORT }}
-          source: ./docker-compose.yml
-          target: /path/to/your/project/
+          source: ./docker-compose-all-modules.yml
+          target: /home/${{ secrets.VM_USER }}/livraisons/
 
       # Étape 4 : Supprimer les anciennes images et démarrer les nouveaux services
       - name: Deploy services with Docker Compose
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
           port: ${{ secrets.VM_SSH_PORT }}
           script: |
-            cd /path/to/your/project/
-            docker-compose down --remove-orphans
-            docker-compose pull
-            docker-compose up -
+            cd /home/${{ secrets.VM_USER }}/livraisons/
+            if docker compose -f docker-compose-all-modules.yml ps -q | grep .; then
+              docker compose -f docker-compose-all-modules.yml down --remove-orphans
+            fi
+            docker compose pull
+            docker compose -f docker-compose-all-modules.yml up -d
