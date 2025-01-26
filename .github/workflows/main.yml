@@ -1,0 +1,154 @@
+#file: noinspection SpellCheckingInspection
+name: Build and Push Docker Images for All Services
+
+on:
+  push:
+    branches:
+      - '**' # Exécuter sur tous les push vers toutes les branches
+  pull_request:
+    branches:
+      - '**'
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      modified-modules: ${{ steps.detect.outputs.modified }}
+    steps:
+      # Étape 1 : Checkout du code source
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Récupérer tout l'historique Git
+
+      # Étape 2 : Détecter les modules modifiés
+      - name: Detect modified modules
+        id: detect
+        run: |
+          MODIFIED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          MODULES=("convert-service" "correction-service" "download-service" "email-service" "gateway-service" "trace-service" "transcribe-service" "front-service")
+          MODIFIED_MODULES=()
+          for module in "${MODULES[@]}"; do
+            if echo "$MODIFIED_FILES" | grep -q "^$module/"; then
+              MODIFIED_MODULES+=("\"$module\"")
+            fi
+          done
+          echo "modified=[${MODIFIED_MODULES[*]}]" >> $GITHUB_OUTPUT
+
+      # Étape 3 : Afficher les modules modifiés
+      - name: Print modified modules
+        run: |
+          echo "Modules modifiés: ${{ steps.detect.outputs.modified }}"
+
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.modified-modules != '[]' }} # Empêcher l'exécution si aucun module n'est modifié
+
+    strategy:
+      matrix:
+        module: ${{ fromJson(needs.detect-changes.outputs.modified-modules) }}
+
+    steps:
+      # Étape 1 : Checkout du code source
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Étape 2 : Extraire et transformer le nom du dépôt en minuscules
+      - name: Extract and lowercase repository name
+        id: extract-repo-name
+        run: echo "repository_name=$(echo '${{ github.repository }}' | cut -d'/' -f2 | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      # Étape 3 : Récupérer le propriétaire en minuscules
+      - name: Convert repository owner to lowercase
+        id: to-lowercase
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      # Étape 4 : Configuration de Java (uniquement pour les backend services)
+      - name: Set up JDK
+        if: ${{ matrix.module != 'front-service' }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build and install shared module
+        if: ${{ matrix.module != 'front-service' }}
+        run: mvn -pl shared clean install -am
+
+      # Étape 7 : Construire module maven
+      - name: Build and push backend Docker image
+        if: ${{ matrix.module != 'front-service' }}
+        run: mvn -pl ${{ matrix.module }} clean install -am
+        env:
+          GITHUB_USERNAME: ${{ env.owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Étape 7 : Pousser une image pour les services backend
+      - name: Build and push backend Docker image
+        if: ${{ matrix.module != 'front-service' }}
+        run: mvn -pl ${{ matrix.module }} jib:build
+        env:
+          GITHUB_USERNAME: ${{ env.owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Étape 8 : Construire et pousser une image pour le front-service
+      - name: Build and push frontend Docker image
+        if: ${{ matrix.module == 'front-service' }}
+        run: |
+          docker build -t ghcr.io/${{ env.owner }}/${{ env.repository_name }}/front-service:latest ./front-service
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ env.owner }}" --password-stdin
+          docker push ghcr.io/${{ env.owner }}/${{ env.repository_name }}/front-service:latest
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push # S'assurer que ce job dépend de "build-and-push"
+
+    steps:
+      # Étape 1 : Checkout du code source
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Étape 2 : Configuration SSH pour se connecter à la VM
+      - name: Connect to VM via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          script: |
+            echo "Connexion établie avec la VM"
+
+      # Étape 3 : Copie du fichier docker-compose.yml sur la VM
+      - name: Upload docker-compose.yml to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          source: ./docker-compose-all-modules.yml
+          target: /home/${{ secrets.VM_USER }}/livraisons/
+
+      # Étape 4 : Supprimer les anciennes images et démarrer les nouveaux services
+      - name: Deploy services with Docker Compose
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          script: |
+            cd /home/${{ secrets.VM_USER }}/livraisons/
+            if docker compose -f docker-compose-all-modules.yml ps -q | grep .; then
+              docker compose -f docker-compose-all-modules.yml down --remove-orphans
+            fi
+            docker compose pull
+            docker compose -f docker-compose-all-modules.yml up -d

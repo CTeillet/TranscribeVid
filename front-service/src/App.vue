@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="container">
-    <HeaderComponent />
+    <HeaderComponent/>
 
     <form @submit.prevent="submitForm" class="form">
       <InputFieldComponent
@@ -16,7 +16,7 @@
           placeholder="Enter your email"
       />
 
-      <SubmitButtonComponent />
+      <SubmitButtonComponent/>
     </form>
   </div>
 </template>
@@ -35,6 +35,7 @@ export default {
   data() {
     return {
       videoLink: '',
+      // Ajouter une nouvelle propriété pour stocker l'adresse
       email: ''
     };
   },
@@ -50,7 +51,9 @@ export default {
           email: this.email
         };
 
-        const response = await fetch('http://localhost:8080/api/transcribe-requests', {
+        const apiUrl = import.meta.env.VITE_API_URL; // Charger l'URL depuis les variables d'environnement
+
+        const response = await fetch(`${ apiUrl }/transcribe-requests`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -59,7 +62,7 @@ export default {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          console.log(`HTTP error! status: ${ response.status }`);
         }
 
         const result = await response.json();

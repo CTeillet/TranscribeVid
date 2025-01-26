@@ -78,6 +78,8 @@ services:
       MINIO_ROOT_USER: minioadmin
       # noinspection SpellCheckingInspection
       MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
     command: server /data --console-address ":9001"
 
   kaldi-fr:
@@ -96,3 +98,6 @@ services:
     container_name: recasepunct-api
     ports:
       - "5000:5000"
+
+volumes:
+  minio-data:

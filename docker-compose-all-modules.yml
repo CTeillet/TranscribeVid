@@ -1,0 +1,239 @@
+#file: noinspection SpellCheckingInspection
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - default
+    restart:
+      always
+
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT_INTERNAL://kafka:9093,PLAINTEXT_EXTERNAL://kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_INTERNAL://kafka:9093,PLAINTEXT_EXTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_INTERNAL:PLAINTEXT,PLAINTEXT_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    restart:
+      always
+    networks:
+      - default
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9093
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - default
+    restart:
+      always
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:latest
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka:9093
+      CONTROL_CENTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+    depends_on:
+      - kafka
+      - schema-registry
+    networks:
+      - default
+    restart:
+      always
+
+  redis-stack:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    networks:
+      - default
+    restart:
+      always
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - default
+    restart:
+      always
+
+  kaldi-fr:
+    image: alphacep/kaldi-fr:latest
+    ports:
+      - "2700:2700"
+    networks:
+      - default
+    restart:
+      always
+
+  recasepunct-api:
+    image: ghcr.io/cteillet/recasepunct-api:v1.0.0
+    ports:
+      - "5000:5000"
+    networks:
+      - default
+    restart:
+      always
+
+  email-service:
+    image: ghcr.io/cteillet/transcribevid/email-service:latest
+    ports:
+      - "8085:8080"
+    environment:
+      - JASYPT_PASSWORD=${JASYPT_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - default
+    depends_on:
+      - redis-stack
+      - kafka
+      - minio
+      - kaldi-fr
+    restart:
+      always
+
+  convert-service:
+    image: ghcr.io/cteillet/transcribevid/convert-service:latest
+    ports:
+      - "8086:8080"
+    environment:
+      - JASYPT_PASSWORD=${JASYPT_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - default
+    depends_on:
+      - redis-stack
+      - kafka
+      - minio
+    restart:
+      always
+
+  correction-service:
+    image: ghcr.io/cteillet/transcribevid/correction-service:latest
+    ports:
+      - "8087:8080"
+    environment:
+      - JASYPT_PASSWORD=${JASYPT_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - default
+    depends_on:
+      - redis-stack
+      - kafka
+      - minio
+      - recasepunct-api
+    restart:
+      always
+
+  download-service:
+    image: ghcr.io/cteillet/transcribevid/download-service:latest
+    ports:
+      - "8088:8080"
+    environment:
+      - JASYPT_PASSWORD=${JASYPT_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - default
+    depends_on:
+      - redis-stack
+      - kafka
+      - minio
+    restart:
+      always
+
+  gateway-service:
+    image: ghcr.io/cteillet/transcribevid/gateway-service:latest
+    ports:
+      - "8089:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - default
+    depends_on:
+      - redis-stack
+      - kafka
+    restart:
+      always
+
+  transcribe-service:
+    image: ghcr.io/cteillet/transcribevid/transcribe-service:latest
+    ports:
+      - "8090:8080"
+    environment:
+      - JASYPT_PASSWORD=${JASYPT_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - default
+    depends_on:
+      - redis-stack
+      - kafka
+      - minio
+    restart:
+      always
+
+  trace-service:
+    image: ghcr.io/cteillet/transcribevid/trace-service:latest
+    ports:
+      - "8091:8080"
+    environment:
+      - JASYPT_PASSWORD=${JASYPT_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - default
+    restart:
+      always
+
+  front-service:
+    image: ghcr.io/cteillet/transcribevid/front-service:latest
+    ports:
+      - "8092:80"
+    networks:
+      - default
+    depends_on:
+      - gateway-service
+    restart:
+      always
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  minio-data:

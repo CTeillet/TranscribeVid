@@ -6,9 +6,13 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import com.teillet.transcribeservice.adapter.VoskWebSocketAdapter;
 import com.teillet.transcribeservice.dto.VoskResult;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +22,10 @@ import java.util.concurrent.Semaphore;
 @Service
 @Slf4j
 public class VoskService implements IVoskService {
+	@Value("${vosk.url}")
+	private String voskUrl;
+
+
 	public static final int MULTIPLICATEUR = 500;
 	private Semaphore semaphore;
 
@@ -35,7 +43,7 @@ public class VoskService implements IVoskService {
 
 		WebSocket ws = getWebSocket(voskResults, semaphore);
 		log.info("Reading file");
-		try(AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(fileIn)) {
+		try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(fileIn)) {
 			AudioFormat format = audioInputStream.getFormat();
 			int bytesPerFrame = format.getFrameSize();
 			if (bytesPerFrame == AudioSystem.NOT_SPECIFIED) {
@@ -89,7 +97,7 @@ public class VoskService implements IVoskService {
 
 	public WebSocket getWebSocket(List<VoskResult> voskResults, Semaphore semaphore) throws IOException, WebSocketException {
 		WebSocketFactory factory = new WebSocketFactory();
-		WebSocket ws = factory.createSocket("ws://localhost:2700");
+		WebSocket ws = factory.createSocket("ws://" + voskUrl);
 
 		// Passez le sémaphore ici
 		ws.addListener(new VoskWebSocketAdapter(semaphore, voskResults));
