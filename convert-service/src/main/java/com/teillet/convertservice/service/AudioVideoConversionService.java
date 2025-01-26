@@ -25,13 +25,15 @@ public class AudioVideoConversionService implements IAudioVideoConversionService
 
 			// Construction de la commande FFmpeg
 			FFmpegBuilder builder = new FFmpegBuilder()
-					.setInput(videoFile.getAbsolutePath())   // Fichier vidéo en entrée
-					.addOutput(outputAudioFile.getAbsolutePath()) // Fichier audio en sortie
-					.setAudioCodec("libmp3lame")                  // Utilisation du codec AAC (ou "libmp3lame" pour MP3)
-					.setAudioBitRate(128_000)              // Débit binaire de l'audio (128 kbps pour une qualité correcte)
-					.setAudioSampleRate(16_000)            // Fréquence d'échantillonnage 16 kHz
-					.setAudioChannels(1)                  // Convertir en mono
-					.setFormat("mp3")                     // Format de conteneur pour AAC (ou "mp3" pour MP3)
+					.setInput(videoFile.getAbsolutePath())         // Fichier vidéo en entrée
+					.addOutput(outputAudioFile.getAbsolutePath())  // Fichier audio en sortie
+					.setAudioCodec("libmp3lame")                  // Codec MP3
+					.setAudioBitRate(16_000)                      // Débit binaire ultra-réduit à 16 kbps
+					.setAudioSampleRate(8_000)                    // Échantillonnage réduit à 8 kHz
+					.setAudioChannels(1)                          // Convertir en mono
+					.addExtraArgs("-q:a", "9")                    // VBR avec qualité minimale
+					.addExtraArgs("-map_metadata", "-1")          // Supprimer toutes les métadonnées
+					.setFormat("mp3")                             // Format de conteneur MP3
 					.done();
 
 			// Exécution de la commande

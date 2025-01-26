@@ -65,7 +65,7 @@ export default {
         }
 
         const result = await response.json();
-        // alert('Requête envoyée avec succès !');
+        alert('Requête envoyée avec succès  !');
         console.log('Réponse:', result);
       } catch (error) {
         console.error('Erreur lors de l\'envoi de la requête:', error);
