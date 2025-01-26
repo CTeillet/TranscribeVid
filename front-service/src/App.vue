@@ -35,7 +35,6 @@ export default {
   data() {
     return {
       videoLink: '',
-      // Ajouter une nouvelle propriété pour stocker l'adresse
       email: ''
     };
   },

@@ -1,6 +1,9 @@
 package com.teillet.shared.mapper;
 
-import com.teillet.shared.avro.*;
+import com.teillet.shared.avro.ConversionRequest;
+import com.teillet.shared.avro.DownloadRequest;
+import com.teillet.shared.avro.MailRequest;
+import com.teillet.shared.avro.TranscriptionRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -17,9 +20,6 @@ public interface IMapper {
 	@Mapping(target = "audioFile", ignore = true)
 	TranscriptionRequest toTranscriptionRequest(ConversionRequest request);
 
-	@Mapping(target = "transcription", ignore = true)
-	CorrectionRequest toCorrectionRequest(TranscriptionRequest request);
-
 	@Mapping(target = "correctedTranscriptionFile", ignore = true)
-	MailRequest toMailRequest(CorrectionRequest request);
+	MailRequest toMailRequest(TranscriptionRequest request);
 }

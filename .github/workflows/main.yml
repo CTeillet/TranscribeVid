@@ -30,7 +30,7 @@ jobs:
         id: detect
         run: |
           MODIFIED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-          MODULES=("convert-service" "correction-service" "download-service" "email-service" "gateway-service" "trace-service" "transcribe-service" "front-service")
+          MODULES=("convert-service" "download-service" "email-service" "gateway-service" "trace-service" "transcribe-service" "front-service")
           MODIFIED_MODULES=()
           for module in "${MODULES[@]}"; do
             if echo "$MODIFIED_FILES" | grep -q "^$module/"; then

@@ -11,7 +11,6 @@
     <modules>
         <module>shared</module>
         <module>download-service</module>
-        <module>correction-service</module>
         <module>convert-service</module>
         <module>gateway-service</module>
         <module>trace-service</module>

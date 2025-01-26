@@ -7,7 +7,6 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-
 import java.io.File;
 import java.io.IOException;
 
@@ -28,9 +27,11 @@ public class AudioVideoConversionService implements IAudioVideoConversionService
 			FFmpegBuilder builder = new FFmpegBuilder()
 					.setInput(videoFile.getAbsolutePath())   // Fichier vidéo en entrée
 					.addOutput(outputAudioFile.getAbsolutePath()) // Fichier audio en sortie
-					.setAudioSampleRate(16_000)             // Fréquence d'échantillonnage 16 kHz
-					.setAudioChannels(1)                   // Convertir en mono
-					.setAudioCodec("pcm_s16le")            // Codec audio PCM 16 bits
+					.setAudioCodec("libmp3lame")                  // Utilisation du codec AAC (ou "libmp3lame" pour MP3)
+					.setAudioBitRate(128_000)              // Débit binaire de l'audio (128 kbps pour une qualité correcte)
+					.setAudioSampleRate(16_000)            // Fréquence d'échantillonnage 16 kHz
+					.setAudioChannels(1)                  // Convertir en mono
+					.setFormat("mp3")                     // Format de conteneur pour AAC (ou "mp3" pour MP3)
 					.done();
 
 			// Exécution de la commande
