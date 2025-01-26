@@ -37,8 +37,11 @@ jobs:
               MODIFIED_MODULES+=("\"$module\"")
             fi
           done
-          echo "modified=[${MODIFIED_MODULES[*]}]" >> $GITHUB_OUTPUT
-
+          if [ ${#MODIFIED_MODULES[@]} -eq 0 ]; then
+            echo "modified=[]" >> $GITHUB_OUTPUT
+          else
+            echo "modified=$(printf "[%s]" "$(IFS=,; echo "${MODIFIED_MODULES[*]}")")" >> $GITHUB_OUTPUT
+          fi
       # Étape 3 : Afficher les modules modifiés
       - name: Print modified modules
         run: |

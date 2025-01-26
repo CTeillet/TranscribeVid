@@ -20,6 +20,9 @@ public class KafkaTopicConfig {
 	private int replicas;
 
 	@Bean
+	/**
+	 * Create a new topic with the name KAFKA_SEND_FINAL_TEXT_TOPIC
+	 */
 	public NewTopic createTopic() {
 		return TopicBuilder.name(KAFKA_SEND_FINAL_TEXT_TOPIC)
 				.partitions(partitions)

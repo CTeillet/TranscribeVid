@@ -107,7 +107,6 @@ services:
       - redis-stack
       - kafka
       - minio
-      - kaldi-fr
     restart:
       always
 
@@ -173,17 +172,17 @@ services:
     restart:
       always
 
-  trace-service:
-    image: ghcr.io/cteillet/transcribevid/trace-service:latest
-    ports:
-      - "8091:8080"
-    environment:
-      - JASYPT_PASSWORD=${JASYPT_PASSWORD}
-      - SPRING_PROFILES_ACTIVE=docker
-    networks:
-      - default
-    restart:
-      always
+  #  trace-service:
+  #    image: ghcr.io/cteillet/transcribevid/trace-service:latest
+  #    ports:
+  #      - "8091:8080"
+  #    environment:
+  #      - JASYPT_PASSWORD=${JASYPT_PASSWORD}
+  #      - SPRING_PROFILES_ACTIVE=docker
+  #    networks:
+  #      - default
+  #    restart:
+  #      always
 
   front-service:
     image: ghcr.io/cteillet/transcribevid/front-service:latest
