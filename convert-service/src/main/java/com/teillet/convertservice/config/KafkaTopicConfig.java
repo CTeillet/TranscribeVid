@@ -20,6 +20,9 @@ public class KafkaTopicConfig {
 	private int replicas;
 
 	@Bean
+	/**
+	 * Create a new topic with the name KAFKA_TRANSCRIPT_AUDIO_TOPIC
+	 */
 	public NewTopic createTopic() {
 		return TopicBuilder.name(KAFKA_TRANSCRIPT_AUDIO_TOPIC)
 				.partitions(partitions)

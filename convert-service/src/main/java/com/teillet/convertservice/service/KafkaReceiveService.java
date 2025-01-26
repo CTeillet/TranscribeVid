@@ -41,7 +41,7 @@ public class KafkaReceiveService {
 		File downloadFile = new File(downloadDirectory, String.valueOf(request.getVideoFile()));
 		storageService.downloadVideo(request.getVideoFile().toString(), downloadFile);
 
-		File convertedFile = new File(downloadDirectory, request.getRequestId().toString() + ".wav");
+		File convertedFile = new File(downloadDirectory, request.getRequestId().toString() + ".mp3");
 		audioVideoConversionService.convertVideoToAudio(downloadFile, convertedFile);
 
 		storageService.uploadAudio(convertedFile);
