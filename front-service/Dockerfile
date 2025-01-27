@@ -28,9 +28,6 @@ FROM nginx:stable-alpine AS production-stage
 # Copier les fichiers construits dans le dossier NGINX par défaut
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# Ajouter une configuration NGINX personnalisée pour gérer les routes (facultatif)
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-
 # Exposer le port 80
 EXPOSE 80
 

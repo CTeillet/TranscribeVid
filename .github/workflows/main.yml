@@ -136,6 +136,28 @@ jobs:
           source: ./docker-compose-all-modules.yml
           target: /home/${{ secrets.VM_USER }}/livraisons/
 
+      # Étape 4 : Copie du fichier nginx sur la VM
+      - name: Upload nginx config to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          source: ./nginx.conf
+          target: /home/${{ secrets.VM_USER }}/livraisons/
+
+      # Étape 4 : Copie du fichier nginx sur la VM
+      - name: Upload nginx config to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          source: ./entrypoint.sh
+          target: /home/${{ secrets.VM_USER }}/livraisons/
+
       - name: Deploy services with Docker Compose
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -188,6 +210,28 @@ jobs:
           password: ${{ secrets.VM_SSH_PASSWORD }}
           port: ${{ secrets.VM_SSH_PORT }}
           source: ./docker-compose-all-modules.yml
+          target: /home/${{ secrets.VM_USER }}/livraisons/
+
+      # Étape 4 : Copie du fichier nginx sur la VM
+      - name: Upload nginx config to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          source: ./nginx.conf
+          target: /home/${{ secrets.VM_USER }}/livraisons/
+
+      # Étape 4 : Copie du fichier nginx sur la VM
+      - name: Upload nginx config to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_SSH_PASSWORD }}
+          port: ${{ secrets.VM_SSH_PORT }}
+          source: ./entrypoint.sh
           target: /home/${{ secrets.VM_USER }}/livraisons/
 
       - name: Deploy services with Docker Compose
