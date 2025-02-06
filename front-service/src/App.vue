@@ -49,12 +49,16 @@ export default {
           videoUrl: this.videoLink,
           email: this.email
         };
+        await this.loadEnvVariables();
 
         const apiUrl = import.meta.env.VITE_API_URL; // Charger l'URL depuis les variables d'environnement
+        const VITE_API_SECRET = window._env_.VITE_API_SECRET;
+        console.log("API_SECRET:", window._env_.VITE_API_SECRET);
 
         const response = await fetch(`${ apiUrl }/transcribe-requests`, {
           method: 'POST',
           headers: {
+            "Authorization": `Bearer ${ VITE_API_SECRET }`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(payload)
@@ -70,6 +74,15 @@ export default {
       } catch (error) {
         console.error('Erreur lors de l\'envoi de la requête:', error);
         alert('Une erreur est survenue lors de l\'envoi de la requête.');
+      }
+    },
+    async loadEnvVariables() {
+      try {
+        const response = await fetch("/env.js"); // Charge le fichier contenant la variable
+        const text = await response.text();
+        eval(text); // Injecte les variables dans `window._env_`
+      } catch (error) {
+        console.error("Impossible de charger les variables d'environnement", error);
       }
     }
   }
