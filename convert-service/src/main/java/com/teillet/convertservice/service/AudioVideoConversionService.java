@@ -40,7 +40,7 @@ public class AudioVideoConversionService implements IAudioVideoConversionService
 			FFmpegExecutor executor = new FFmpegExecutor(ffmpeg);
 			executor.createJob(builder).run();
 
-			System.out.println("Conversion réussie : " + outputAudioFile.getAbsolutePath());
+			log.info("Conversion réussie : {}", outputAudioFile.getAbsolutePath());
 		} catch (IOException e) {
 			throw new RuntimeException("Erreur lors de l'exécution de FFmpeg : " + e.getMessage(), e);
 		}

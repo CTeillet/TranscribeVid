@@ -1,6 +1,5 @@
 package com.teillet.downloadservice.service;
 
-import com.teillet.shared.model.LaunchProcessRequest;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -11,10 +10,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 
 @Service
 @Slf4j
@@ -23,36 +18,7 @@ public class VideoDownloadService implements IVideoDownloadService {
 	public static final int BUFFER_SIZE = 65536;
 
 	@Override
-	public File downloadVideo(LaunchProcessRequest request, File outputFile) throws IOException, URISyntaxException {
-		// Nom du fichier à partir de l'URL
-
-		// Connexion à l'URL
-		URL url = new URI(request.getVideoUrl()).toURL();
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestMethod("GET");
-		connection.connect();
-
-		// Vérifier si la connexion est réussie
-		int responseCode = connection.getResponseCode();
-		if (responseCode != HttpURLConnection.HTTP_OK) {
-			throw new RuntimeException("Failed to download video. HTTP response code: " + responseCode);
-		}
-
-		// Lire les données de la vidéo et les écrire dans un fichier
-		try (InputStream inputStream = connection.getInputStream();
-		     FileOutputStream outputStream = new FileOutputStream(outputFile)) {
-			byte[] buffer = new byte[BUFFER_SIZE];
-			int bytesRead;
-			while ((bytesRead = inputStream.read(buffer)) != -1) {
-				outputStream.write(buffer, 0, bytesRead);
-			}
-		}
-
-		return outputFile;
-	}
-
-	@Override
-	public File downloadVideoWithOkHttp(File outputFile, String videoUrl) throws IOException {
+	public void downloadVideoWithOkHttp(File outputFile, String videoUrl) throws IOException {
 		OkHttpClient client = new OkHttpClient();
 
 		log.info("Starting video download. URL: {}, Output file: {}", videoUrl, outputFile.getAbsolutePath());
@@ -108,7 +74,6 @@ public class VideoDownloadService implements IVideoDownloadService {
 		log.info("Video download completed. URL: {}, Output file: {}, Time taken: {} ms",
 				videoUrl, outputFile.getAbsolutePath(), (endTime - startTime));
 
-		return outputFile;
 	}
 
 }
