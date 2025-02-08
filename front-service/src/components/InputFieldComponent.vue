@@ -1,12 +1,15 @@
 <template>
-  <div class="form-group">
-    <label :for="label">{{ label }}</label>
+  <div class="mb-6">
+    <label :for="label" class="block text-sm font-medium text-gray-700 mb-2">
+      {{ label }}
+    </label>
     <input
         :type="type"
         :id="label"
         :placeholder="placeholder"
         :value="modelValue"
         @input="$emit('update:modelValue', $event.target.value)"
+        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition duration-200 outline-none"
     />
   </div>
 </template>
@@ -25,31 +28,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.form-group {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  margin-bottom: 25px;
-}
-
-label {
-  margin-bottom: 10px;
-  font-size: 18px;
-  color: #555;
-}
-
-input {
-  padding: 15px;
-  font-size: 18px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  outline: none;
-  transition: border-color 0.3s ease;
-}
-
-input:focus {
-  border-color: #4a90e2;
-}
-</style>
