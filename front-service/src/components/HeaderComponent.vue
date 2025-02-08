@@ -1,6 +1,6 @@
 <template>
   <header>
-    <h1 class="text-3xl font-bold underline">Transcribe your video</h1>
+    <h1>Transcribe your video</h1>
   </header>
 </template>
 
