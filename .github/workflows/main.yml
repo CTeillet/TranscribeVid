@@ -76,6 +76,43 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # Étape 5 : Supprimer les anciennes images GHCR avant de publier les nouvelles
+      - name: Delete old Docker images from GHCR
+        run: |
+          REPO="ghcr.io/${{ env.owner }}/${{ env.repository_name }}/${{ matrix.module }}"
+          echo "Fetching tags for $REPO"
+          
+          # Récupération de la liste des tags via l'API GHCR
+          TAGS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://ghcr.io/v2/${{ env.owner }}/${{ env.repository_name }}/${{ matrix.module }}/tags/list" | \
+            grep -o '"tags":\["[^]]*' | sed 's/"tags":\["//' | tr ',' '\n' | tr -d '"' )
+          
+          # Suppression des tags sauf "latest"
+          for TAG in $TAGS; do
+            if [ "$TAG" != "latest" ]; then
+              echo "Deleting $REPO:$TAG"
+          
+              # Récupérer le digest de l'image
+              DIGEST=$(curl -s -I -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                "https://ghcr.io/v2/${{ env.owner }}/${{ env.repository_name }}/${{ matrix.module }}/manifests/$TAG" | \
+                grep -i "Docker-Content-Digest" | awk '{print $2}' | tr -d '\r')
+          
+              if [ -n "$DIGEST" ]; then
+                curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                  "https://ghcr.io/v2/${{ env.owner }}/${{ env.repository_name }}/${{ matrix.module }}/manifests/$DIGEST"
+                echo "Deleted $REPO:$TAG successfully"
+              else
+                echo "Failed to retrieve digest for $TAG"
+              fi
+            fi
+          done
+        env:
+          GITHUB_USERNAME: ${{ env.owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+      # Étape 6 : Configuration de Docker
       - name: Build and install shared module
         if: ${{ matrix.module != 'front-service' }}
         run: mvn -pl shared clean install -am
@@ -88,7 +125,7 @@ jobs:
           GITHUB_USERNAME: ${{ env.owner }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Étape 7 : Pousser une image pour les services backend
+      # Étape 8 : Pousser une image pour les services backend
       - name: Build and push backend Docker image
         if: ${{ matrix.module != 'front-service' }}
         run: mvn -pl ${{ matrix.module }} jib:build
@@ -96,7 +133,7 @@ jobs:
           GITHUB_USERNAME: ${{ env.owner }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Étape 8 : Construire et pousser une image pour le front-service
+      # Étape 9 : Construire et pousser une image pour le front-service
       - name: Build and push frontend Docker image
         if: ${{ matrix.module == 'front-service' }}
         run: |
