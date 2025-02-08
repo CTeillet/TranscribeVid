@@ -1,4 +1,6 @@
 <template>
+  <link href="/src/styles.css" rel="stylesheet">
+
   <div id="app" class="container">
     <HeaderComponent/>
 
