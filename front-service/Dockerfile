@@ -10,6 +10,9 @@ WORKDIR /app
 # Copier uniquement les fichiers nécessaires pour l'installation des dépendances
 COPY package*.json ./
 
+# Supprimer les fichiers de cache potentiellement corrompus
+RUN rm -rf node_modules package-lock.json && npm install --legacy-peer-deps
+
 # Installer uniquement les dépendances de production
 RUN npm install
 
